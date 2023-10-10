@@ -4,7 +4,7 @@ import argparse
 import os
 from PIL import Image, ImageTk
 
-class VideoPlayer:
+class PyVideoPlayer:
     def __init__(self, root, video_path, seek_amount=10):
         self.root = root
         self.root.title("Video Player")
@@ -17,9 +17,9 @@ class VideoPlayer:
         button_frame.pack(pady=10)  # Add vertical padding
 
         # Video control buttons
-        self.backward_button = tk.Button(button_frame, text="<<", command=self.backward)
+        self.backward_button = tk.Button(button_frame, text="<<", command=self.seek_backward)
         self.play_pause_button = tk.Button(button_frame, text="Play", command=self.toggle_play_pause)
-        self.forward_button = tk.Button(button_frame, text=">>", command=self.forward)
+        self.forward_button = tk.Button(button_frame, text=">>", command=self.seek_forward)
 
         # Pack buttons with padding on the sides
         self.backward_button.pack(side="left", padx=10)  # Add horizontal padding
@@ -79,21 +79,15 @@ class VideoPlayer:
             self.is_playing = False
             self.play_pause_button.config(text="Play")
 
-    def forward(self):
+    def seek_forward(self):
         current_position = self.cap.get(cv2.CAP_PROP_POS_MSEC)
         new_position = current_position + (self.seek_amount * 1000)  # Convert seconds to milliseconds
         self.cap.set(cv2.CAP_PROP_POS_MSEC, new_position)
 
-    def backward(self):
+    def seek_backward(self):
         current_position = self.cap.get(cv2.CAP_PROP_POS_MSEC)
         new_position = max(current_position - (self.seek_amount * 1000), 0)  # Convert seconds to milliseconds
         self.cap.set(cv2.CAP_PROP_POS_MSEC, new_position)
-
-    def decrease_seek_amount(self, event):
-        self.seek_amount -= 1
-
-    def increase_seek_amount(self, event):
-        self.seek_amount += 1
 
     def show_error(self, message):
         error_label = tk.Label(self.root, text=message, fg="red")
@@ -106,5 +100,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     root = tk.Tk()
-    app = VideoPlayer(root, args.video, args.seek_amount)
+    app = PyVideoPlayer(root, args.video, args.seek_amount)
     root.mainloop()
