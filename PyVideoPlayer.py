@@ -10,16 +10,9 @@ class PyVideoPlayer:
         self.root = root
         self.root.title("Video Player")
         
-        # Set the minimum window size to 720p
-        self.root.minsize(1280, 720)
-        
-        # Create a frame for video canvas
-        video_frame = tk.Frame(root)
-        video_frame.pack(expand=True, fill='both')
-        
         # Create a frame for control buttons
         button_frame = tk.Frame(root)
-        button_frame.pack()
+        button_frame.pack(side=tk.TOP, padx=10, pady=10)
 
         # Video control buttons
         self.backward_button = tk.Button(button_frame, text="<<", command=self.seek_backward)
@@ -43,7 +36,7 @@ class PyVideoPlayer:
         self.cap = cv2.VideoCapture(video_path)
 
         # Create video display canvas
-        self.canvas = tk.Canvas(video_frame, width=self.cap.get(3), height=self.cap.get(4))
+        self.canvas = tk.Canvas(root)
         self.canvas.pack(expand=True, fill='both')
 
         # Seek amount in seconds
@@ -54,7 +47,7 @@ class PyVideoPlayer:
 
         # Create a progress bar
         self.progress_bar = ttk.Progressbar(root, orient="horizontal", length=300, mode="determinate")
-        self.progress_bar.pack()
+        self.progress_bar.pack(side=tk.TOP, padx=10, pady=10)  # Add vertical padding
 
     def toggle_play_pause(self, event=None):
         if self.is_playing:
@@ -115,4 +108,10 @@ if __name__ == "__main__":
 
     root = tk.Tk()
     app = PyVideoPlayer(root, args.video, args.seek_amount)
+    
+    # Get video frame size and update window size
+    frame_width = app.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    frame_height = app.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    root.geometry(f"{int(frame_width)}x{int(frame_height) + 100}")  # Add extra space for controls
+    
     root.mainloop()
