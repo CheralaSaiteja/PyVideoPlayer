@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import cv2
 import argparse
 import os
@@ -11,10 +12,14 @@ class PyVideoPlayer:
         
         # Set the minimum window size to 720p
         self.root.minsize(1280, 720)
-
-        # Frame to contain buttons
+        
+        # Create a frame for video canvas
+        video_frame = tk.Frame(root)
+        video_frame.pack(expand=True, fill='both')
+        
+        # Create a frame for control buttons
         button_frame = tk.Frame(root)
-        button_frame.pack(pady=10)  # Add vertical padding
+        button_frame.pack()
 
         # Video control buttons
         self.backward_button = tk.Button(button_frame, text="<<", command=self.seek_backward)
@@ -22,31 +27,34 @@ class PyVideoPlayer:
         self.forward_button = tk.Button(button_frame, text=">>", command=self.seek_forward)
 
         # Pack buttons with padding on the sides
-        self.backward_button.pack(side="left", padx=10)  # Add horizontal padding
-        self.play_pause_button.pack(side="left", padx=10)  # Add horizontal padding
-        self.forward_button.pack(side="left", padx=10)  # Add horizontal padding
+        self.backward_button.grid(row=0, column=0, padx=10)  # Add horizontal padding
+        self.play_pause_button.grid(row=0, column=1, padx=10)  # Add horizontal padding
+        self.forward_button.grid(row=0, column=2, padx=10)  # Add horizontal padding
 
         # Check if the video file exists
         if not os.path.isfile(video_path):
             self.show_error("Video file not found.")
             return
 
-        # OpenCV variables
-        self.cap = cv2.VideoCapture(video_path)
+        # Initialize is_playing
         self.is_playing = False
 
+        # OpenCV variables
+        self.cap = cv2.VideoCapture(video_path)
+
         # Create video display canvas
-        self.canvas = tk.Canvas(root, width=self.cap.get(3), height=self.cap.get(4))
-        self.canvas.pack()
+        self.canvas = tk.Canvas(video_frame, width=self.cap.get(3), height=self.cap.get(4))
+        self.canvas.pack(expand=True, fill='both')
 
         # Seek amount in seconds
         self.seek_amount = seek_amount
 
-        # Bind key presses for fine control and play/pause
-        root.bind("<space>", self.toggle_play_pause)
+        # Create a timer to periodically update the progress bar and video frame
+        self.update_video()
 
-        # Set up periodic video frame updating
-        self.update_video_frame()
+        # Create a progress bar
+        self.progress_bar = ttk.Progressbar(root, orient="horizontal", length=300, mode="determinate")
+        self.progress_bar.pack()
 
     def toggle_play_pause(self, event=None):
         if self.is_playing:
@@ -58,9 +66,9 @@ class PyVideoPlayer:
         if not self.is_playing:
             self.is_playing = True
             self.play_pause_button.config(text="Pause")
-            self.update_video_frame()
+            self.update_video()
 
-    def update_video_frame(self):
+    def update_video(self):
         if self.is_playing:
             ret, frame = self.cap.read()
             if ret:
@@ -68,7 +76,13 @@ class PyVideoPlayer:
                 pil_image = Image.fromarray(cv2image)
                 self.photo = ImageTk.PhotoImage(image=pil_image)
                 self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo)
-                self.root.after(30, self.update_video_frame)  # Update video frame every 30ms
+
+                total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
+                current_frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+                if total_frames > 0:
+                    progress = (current_frame / total_frames) * 100
+                    self.progress_bar["value"] = progress
+                self.root.after(30, self.update_video)  # Update video frame and progress bar every 30ms
             else:
                 self.is_playing = False
                 self.play_pause_button.config(text="Play")
