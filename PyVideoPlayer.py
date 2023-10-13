@@ -87,9 +87,13 @@ class PyVideoPlayer:
             self.play_pause_button.config(text="Play")
 
     def seek_forward(self):
-        current_position = self.cap.get(cv2.CAP_PROP_POS_MSEC)
-        new_position = current_position + (self.seek_amount * 1000)  # Convert seconds to milliseconds
-        self.cap.set(cv2.CAP_PROP_POS_MSEC, new_position)
+        current_position = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+        total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        new_position = current_position + int(self.seek_amount * self.cap.get(cv2.CAP_PROP_FPS))
+        
+        if new_position < total_frames:
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, new_position)
+
 
     def seek_backward(self):
         current_position = self.cap.get(cv2.CAP_PROP_POS_MSEC)
