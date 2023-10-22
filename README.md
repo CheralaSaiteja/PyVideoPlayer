@@ -19,11 +19,13 @@ git clone https://github.com/CheralaSaiteja/PyVideoPlayer.git
 # cd into repository
 cd PyVideoPlayer
 
-# activate the environment
+# create and activate the environment
 # on windows
-PyVideoPlayer\Scripts\activate
+python -m venev env
+env\Scripts\activate
 # on mac and linux
-source PyVideoPlayer/bin/activate 
+python3 -m venev env
+source env/bin/activate 
 
 #install dependencies
 pip install -r requirements.txt
@@ -36,7 +38,7 @@ python3 PyVideoPlayer.py -h
 
 # deactivate the environment
 # on windows
-PyVideoPlayer\Scripts\deactivate
+env\Scripts\deactivate
 # on mac and linux
 deactivate
 ```
